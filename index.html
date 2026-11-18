@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0c0e">
+  <meta name="description" content="ShiftFlex — мобильный график 3-х смен (3 műszak) на 2026–2027 годы для бригад A, B, C.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ShiftFlex">
+
+  <title>ShiftFlex — График смен</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- App Header: Compact brand + brigade/settings + Centered 2 Main Tabs -->
+  <header class="app-header" id="appHeader">
+    <div class="header-inner">
+      <div class="header-left">
+        <span class="brand-wordmark">ShiftFlex</span>
+      </div>
+
+      <nav class="main-nav-tabs" role="tablist" aria-label="Разделы">
+        <button class="nav-tab active" role="tab" aria-selected="true" data-view="dashboard">
+          <span>Моя смена</span>
+        </button>
+        <button class="nav-tab" role="tab" aria-selected="false" data-view="calendar">
+          <span>Календарь</span>
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="brigade-chip is-a" id="headerBrigadeBtn" type="button" title="Выбрать бригаду">
+          <span id="headerBrigadeLabel">Бригада A</span>
+        </button>
+        <button id="settingsBtn" class="btn-icon" type="button" title="Настройки" aria-label="Настройки">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="main-container" id="mainContainer">
+    <!-- TAB 1: "Моя смена" -->
+    <section id="dashboardView" class="view-panel" role="tabpanel" aria-label="Моя смена">
+      <!-- Hero Focus Card: Countdown + 24h Shift Cycle Bar -->
+      <section id="liveHeroCard" class="hero-card is-rest" aria-label="Статус смены">
+        <div class="hero-top-row">
+          <span class="hero-state-badge is-rest" id="liveStatusBadge">Отдых</span>
+          <time class="hero-clock mono" id="liveClock" aria-label="Текущее время">--:--</time>
+        </div>
+
+        <div class="hero-timer-block">
+          <div class="hero-timer-caption" id="liveTimerCaption">До следующей смены</div>
+          <div class="hero-timer-value mono" id="liveNextCountdown">--:--:--</div>
+          <div class="hero-timer-sub" id="liveHeroSub">—</div>
+        </div>
+
+        <!-- 24h Plant Cycle Timeline (06:00 -> 06:00) -->
+        <div class="cycle-24h" aria-label="Суточный цикл смен">
+          <div class="cycle-track" id="cycleTrack">
+            <!-- Rendered dynamically -->
+          </div>
+          <div class="cycle-ticks mono">
+            <span>06:00</span>
+            <span>14:00</span>
+            <span>22:00</span>
+            <span>06:00</span>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <button class="btn-action" id="btnNextShiftIcs" type="button">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="17" rx="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>Добавить в календарь</span>
+          </button>
+          <button class="btn-action btn-action-ghost" id="btnNextShiftModal" type="button">Детали дня</button>
+        </div>
+      </section>
+
+      <!-- Configurable Past / Today / Upcoming Day Feed -->
+      <section class="feed-section" aria-label="Ближайшие дни">
+        <div class="feed-head">
+          <div class="feed-head-left">
+            <h2 class="feed-title">Расписание</h2>
+            <span class="feed-range mono" id="dayWindowHint">—</span>
+          </div>
+          <button class="feed-config-btn" id="openWindowSettingsBtn" type="button">
+            <span id="dayWindowConfigText">−1 / +2 дн</span>
+          </button>
+        </div>
+
+        <div id="dayWindowList" class="day-feed-list">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+      </section>
+    </section>
+
+    <!-- TAB 2: "Календарь" -->
+    <section id="calendarView" class="view-panel hidden" role="tabpanel" aria-label="Календарь">
+      <!-- Year Switcher Bar (just below main tabs) -->
+      <div class="cal-toolbar">
+        <div class="year-switch" role="group" aria-label="Выбор года">
+          <button class="year-btn" type="button" data-year="2026">2026</button>
+          <button class="year-btn" type="button" data-year="2027">2027</button>
+        </div>
+
+        <div class="cal-toolbar-right">
+          <button class="cal-tool-btn" id="calBrigadeScopeBtn" type="button">
+            <span id="calScopeLabel">Моя · A</span>
+          </button>
+          <button class="cal-tool-btn cal-today-btn" id="calTodayBtn" type="button">Сегодня</button>
+        </div>
+      </div>
+
+      <!-- Month Strip (underline style, synced with horizontal swipe) -->
+      <div class="cal-month-strip-wrap">
+        <div class="cal-month-pills" id="calMonthPills" role="tablist" aria-label="Месяцы">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Horizontal Month Columns Track (scroll-snap X for months, scroll Y for weeks) -->
+      <div class="cal-months-track" id="calMonthsTrack" aria-label="Календарь по месяцам и неделям">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL 1: First-Time Onboarding Sheet -->
+  <div class="modal-backdrop hidden" id="onboardingModal" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+    <div class="modal-card modal-sheet">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="onboardingTitle">Настройка графика</h2>
+          <p class="modal-subtitle">Выберите бригаду и сколько дней показывать вокруг сегодняшнего</p>
+        </div>
+      </div>
+
+      <div class="modal-body settings-body">
+        <div class="setting-block">
+          <div class="setting-label">Ваша бригада</div>
+          <div class="brigade-pick-grid" id="onboardBrigadeGroup" role="group" aria-label="Выбор бригады">
+            <button type="button" class="brigade-pick-btn active" data-brigade="A">
+              <span class="b-letter is-a">A</span>
+              <span>Бригада</span>
+            </button>
+            <button type="button" class="brigade-pick-btn" data-brigade="B">
+              <span class="b-letter is-b">B</span>
+              <span>Бригада</span>
+            </button>
+            <button type="button" class="brigade-pick-btn" data-brigade="C">
+              <span class="b-letter is-c">C</span>
+              <span>Бригада</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="setting-block">
+          <div class="setting-label-row">
+            <span class="setting-label">Прошедшие дни</span>
+            <span class="setting-hint">Смены и выходные, макс. 2</span>
+          </div>
+          <div class="count-pick-group" id="onboardPastGroup" role="group" aria-label="Прошедшие дни">
+            <button type="button" class="count-pick-btn" data-count="0">Скрыть</button>
+            <button type="button" class="count-pick-btn active" data-count="1">1 день</button>
+            <button type="button" class="count-pick-btn" data-count="2">2 дня</button>
+          </div>
+        </div>
+
+        <div class="setting-block">
+          <div class="setting-label-row">
+            <span class="setting-label">Предстоящие дни</span>
+            <span class="setting-hint">Смены и выходные, макс. 2</span>
+          </div>
+          <div class="count-pick-group" id="onboardFutureGroup" role="group" aria-label="Предстоящие дни">
+            <button type="button" class="count-pick-btn" data-count="0">Скрыть</button>
+            <button type="button" class="count-pick-btn" data-count="1">1 день</button>
+            <button type="button" class="count-pick-btn active" data-count="2">2 дня</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-primary btn-full" id="onboardingSaveBtn">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Settings Sheet -->
+  <div class="modal-backdrop hidden" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-card modal-sheet">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="settingsTitle">Настройки</h2>
+          <p class="modal-subtitle">Бригада, глубина ленты и оформление</p>
+        </div>
+        <button class="modal-close" id="settingsCloseBtn" type="button" aria-label="Закрыть">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body settings-body">
+        <div class="setting-block">
+          <div class="setting-label">Моя бригада</div>
+          <div class="brigade-pick-grid" id="settingsBrigadeGroup" role="group" aria-label="Выбор бригады">
+            <button type="button" class="brigade-pick-btn" data-brigade="A">
+              <span class="b-letter is-a">A</span>
+              <span>Бригада</span>
+            </button>
+            <button type="button" class="brigade-pick-btn" data-brigade="B">
+              <span class="b-letter is-b">B</span>
+              <span>Бригада</span>
+            </button>
+            <button type="button" class="brigade-pick-btn" data-brigade="C">
+              <span class="b-letter is-c">C</span>
+              <span>Бригада</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="setting-block">
+          <div class="setting-label-row">
+            <span class="setting-label">Прошедшие дни</span>
+            <span class="setting-hint">Смены и выходные, макс. 2</span>
+          </div>
+          <div class="count-pick-group" id="settingsPastGroup" role="group" aria-label="Прошедшие дни">
+            <button type="button" class="count-pick-btn" data-count="0">Скрыть</button>
+            <button type="button" class="count-pick-btn" data-count="1">1 день</button>
+            <button type="button" class="count-pick-btn" data-count="2">2 дня</button>
+          </div>
+        </div>
+
+        <div class="setting-block">
+          <div class="setting-label-row">
+            <span class="setting-label">Предстоящие дни</span>
+            <span class="setting-hint">Смены и выходные, макс. 2</span>
+          </div>
+          <div class="count-pick-group" id="settingsFutureGroup" role="group" aria-label="Предстоящие дни">
+            <button type="button" class="count-pick-btn" data-count="0">Скрыть</button>
+            <button type="button" class="count-pick-btn" data-count="1">1 день</button>
+            <button type="button" class="count-pick-btn" data-count="2">2 дня</button>
+          </div>
+        </div>
+
+        <div class="setting-block">
+          <div class="setting-label">Тема</div>
+          <div class="count-pick-group" id="settingsThemeGroup" role="group" aria-label="Тема">
+            <button type="button" class="count-pick-btn" data-theme="dark">Тёмная</button>
+            <button type="button" class="count-pick-btn" data-theme="light">Светлая</button>
+          </div>
+        </div>
+
+        <div class="setting-block setting-extras">
+          <button type="button" class="btn-secondary btn-full" id="settingsHelpBtn">Справка, словарь и праздники</button>
+          <div class="setting-download-row">
+            <a href="grafik_smen_2026.xlsx" class="btn-secondary" download>Excel 2026</a>
+            <a href="grafik_smen_2027.xlsx" class="btn-secondary" download>Excel 2027</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-primary btn-full" id="settingsDoneBtn">Готово</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Day Details Sheet -->
+  <div class="modal-backdrop hidden" id="dayModal" role="dialog" aria-modal="true" aria-labelledby="modalDateTitle">
+    <div class="modal-card modal-sheet">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="modalDateTitle">1 января 2027</h2>
+          <p class="modal-subtitle" id="modalDateSubtitle">Пятница (P) · Неделя 53</p>
+        </div>
+        <button class="modal-close" id="modalCloseBtn" type="button" aria-label="Закрыть">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body" id="modalBody"></div>
+
+      <div class="modal-footer modal-footer-split">
+        <button class="btn-secondary" id="modalCopyBtn" type="button">Скопировать</button>
+        <button class="btn-primary" id="modalIcsBtn" type="button">В календарь (.ics)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: Glossary & Help Sheet -->
+  <div class="modal-backdrop hidden" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
+    <div class="modal-card modal-lg modal-sheet">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="helpModalTitle">Справка и праздники</h2>
+          <p class="modal-subtitle">Обозначения, цикл ротации и нерабочие дни</p>
+        </div>
+        <button class="modal-close" id="helpCloseBtn" type="button" aria-label="Закрыть">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body help-body">
+        <section class="help-section">
+          <h3 class="help-heading">Время смен (3 műszak)</h3>
+          <div class="help-table-wrap">
+            <table class="help-table">
+              <thead>
+                <tr>
+                  <th>Смена</th>
+                  <th>Венгерский</th>
+                  <th>Значение</th>
+                  <th>Часы</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>I смена</td>
+                  <td>Délelőtt</td>
+                  <td>Утренняя</td>
+                  <td class="mono">06:00–14:00</td>
+                </tr>
+                <tr>
+                  <td>II смена</td>
+                  <td>Délután</td>
+                  <td>Вечерняя</td>
+                  <td class="mono">14:00–22:00</td>
+                </tr>
+                <tr>
+                  <td>III смена</td>
+                  <td>Éjszaka</td>
+                  <td>Ночная</td>
+                  <td class="mono">22:00–06:00</td>
+                </tr>
+                <tr>
+                  <td>Выходной</td>
+                  <td>Pihenőnap</td>
+                  <td>Отдых / праздник</td>
+                  <td class="mono">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="help-section">
+          <h3 class="help-heading">3-недельный цикл ротации</h3>
+          <div class="help-table-wrap">
+            <table class="help-table">
+              <thead>
+                <tr>
+                  <th>Фаза цикла</th>
+                  <th>I · 06–14</th>
+                  <th>II · 14–22</th>
+                  <th>III · 22–06</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Неделя 1 (1, 4, 7… / 27, 30…)</td>
+                  <td>C</td>
+                  <td>A</td>
+                  <td>B</td>
+                </tr>
+                <tr>
+                  <td>Неделя 2 (2, 5, 8… / 28, 31…)</td>
+                  <td>A</td>
+                  <td>B</td>
+                  <td>C</td>
+                </tr>
+                <tr>
+                  <td>Неделя 3 (3, 6, 9… / 29, 32, 53…)</td>
+                  <td>B</td>
+                  <td>C</td>
+                  <td>A</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="help-section">
+          <h3 class="help-heading">Словарь обозначений</h3>
+          <div class="glossary-grid">
+            <div class="glossary-item"><strong>H / K / SZE</strong><span>Hétfő, Kedd, Szerda — Пн, Вт, Ср</span></div>
+            <div class="glossary-item"><strong>CS / P</strong><span>Csütörtök, Péntek — Чт, Пт</span></div>
+            <div class="glossary-item"><strong>SZ / V</strong><span>Szombat, Vasárnap — Сб, Вс</span></div>
+            <div class="glossary-item"><strong>Köt. (20 / 160)</strong><span>Норма рабочих дней и часов за месяц</span></div>
+            <div class="glossary-item"><strong>Munkaszüneti nap</strong><span>Государственный нерабочий праздник</span></div>
+            <div class="glossary-item"><strong>Áthelyezett munkanap</strong><span>Рабочая суббота-отработка</span></div>
+            <div class="glossary-item"><strong>Pihenőnap (hídnap)</strong><span>Перенесённый выходной</span></div>
+            <div class="glossary-item"><strong>Téli leállás</strong><span>Зимняя остановка (28–31.12.2026)</span></div>
+          </div>
+        </section>
+
+        <section class="help-section">
+          <h3 class="help-heading">Праздники — 1 полугодие 2027</h3>
+          <ul class="holiday-list">
+            <li><span class="h-date mono">01.01 пт</span><span>Новый год (Újév) — нерабочий день</span></li>
+            <li><span class="h-date mono">15.03 пн</span><span>День революции 1848 года — нерабочий день</span></li>
+            <li><span class="h-date mono">26.03 пт</span><span>Страстная пятница — нерабочий день</span></li>
+            <li><span class="h-date mono">28–29.03</span><span>Пасха и Пасхальный понедельник</span></li>
+            <li><span class="h-date mono">01.05 сб</span><span>Праздник труда</span></li>
+            <li><span class="h-date mono">16–17.05</span><span>Троица и Духов день</span></li>
+          </ul>
+        </section>
+
+        <section class="help-section">
+          <h3 class="help-heading">Праздники и отработки — 2 полугодие 2026</h3>
+          <ul class="holiday-list">
+            <li><span class="h-date mono">08.08 сб</span><span>Рабочая суббота за 21 августа (I: B, II: C, III: A)</span></li>
+            <li><span class="h-date mono">20.08 чт</span><span>День св. Иштвана — нерабочий день</span></li>
+            <li><span class="h-date mono">21.08 пт</span><span>Перенесённый выходной (отработан 08.08)</span></li>
+            <li><span class="h-date mono">23.10 пт</span><span>День памяти революции 1956 г. — нерабочий день</span></li>
+            <li><span class="h-date mono">12.12 сб</span><span>Рабочая суббота за 24 декабря (I: B, II: C, III: A)</span></li>
+            <li><span class="h-date mono">24–26.12</span><span>Сочельник и Рождество</span></li>
+            <li><span class="h-date mono">28–31.12</span><span>Зимняя остановка Téli leállás (Szabadságos lap)</span></li>
+          </ul>
+        </section>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-primary btn-full" id="helpOkBtn" type="button">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toastNotification" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script src="schedule-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

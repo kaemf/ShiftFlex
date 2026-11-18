@@ -1,0 +1,26 @@
+{
+  "name": "ShiftFlex — График смен (3 műszak)",
+  "short_name": "ShiftFlex",
+  "description": "Производственный график 3-х смен (3 műszak) на 1 полугодие 2027 и 2 полугодие 2026 для бригад A, B, C",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "orientation": "any",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

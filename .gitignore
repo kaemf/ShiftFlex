@@ -1,0 +1,13 @@
+# OS & Editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Dependencies & local tooling
+node_modules/
+
+# Source/duplicate Cyrillic Excel workbooks not used by the web app
+# (The website links to grafik_smen_2026.xlsx and grafik_smen_2027.xlsx)
+График_смен_*.xlsx
